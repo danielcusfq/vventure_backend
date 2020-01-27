@@ -39,10 +39,12 @@ if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
                     $myObj = array();
                     $myObj->res = "success";
                     $JSON = json_encode($myObj);
+                    echo $JSON;
                 } else {
                     $myObj = array();
                     $myObj->res = "taken";
                     $JSON = json_encode($myObj);
+                    echo $JSON;
                 }
             } elseif ($type == 2){ // investor account
                 if (verify_email($email, $conn, 2)){
@@ -62,16 +64,24 @@ if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
                     $myObj = array();
                     $myObj->res = "success";
                     $JSON = json_encode($myObj);
+                    echo $JSON;
                 } else {
                     $myObj = array();
                     $myObj->res = "taken";
                     $JSON = json_encode($myObj);
+                    echo $JSON;
                 }
             } else {
-                echo "fail";;
+                $myObj = array();
+                $myObj->res = "fail";
+                $JSON = json_encode($myObj);
+                echo $JSON;
             }
         } else {
-            echo("fail");
+            $myObj = array();
+            $myObj->res = "fail";
+            $JSON = json_encode($myObj);
+            echo $JSON;
         }
     }
 }
