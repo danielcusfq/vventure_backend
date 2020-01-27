@@ -5,6 +5,7 @@ use \Mailjet\Resources;
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+$myObj = "";
 
 if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
     require_once ("../connection.php");
@@ -36,12 +37,10 @@ if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
 
                     send_email($email, $name);
 
-                    $myObj = array();
                     $myObj->res = "success";
                     $JSON = json_encode($myObj);
                     echo $JSON;
                 } else {
-                    $myObj = array();
                     $myObj->res = "taken";
                     $JSON = json_encode($myObj);
                     echo $JSON;
@@ -61,29 +60,33 @@ if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
 
                     send_email($email, $name);
 
-                    $myObj = array();
                     $myObj->res = "success";
                     $JSON = json_encode($myObj);
                     echo $JSON;
                 } else {
-                    $myObj = array();
                     $myObj->res = "taken";
                     $JSON = json_encode($myObj);
                     echo $JSON;
                 }
             } else {
-                $myObj = array();
                 $myObj->res = "fail";
                 $JSON = json_encode($myObj);
                 echo $JSON;
             }
         } else {
-            $myObj = array();
             $myObj->res = "fail";
             $JSON = json_encode($myObj);
             echo $JSON;
         }
+    } else {
+        $myObj->res = "fail";
+        $JSON = json_encode($myObj);
+        echo $JSON;
     }
+} else {
+    $myObj->res = "no get";
+    $JSON = json_encode($myObj);
+    echo $JSON;
 }
 
 function send_email($email, $name){
