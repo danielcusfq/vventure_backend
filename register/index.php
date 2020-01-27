@@ -5,7 +5,7 @@ use \Mailjet\Resources;
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-$myObj = "";
+$myObj = (object)array();
 
 if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
     require_once ("../connection.php");
