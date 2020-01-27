@@ -113,7 +113,6 @@ function send_email($email, $name){
     ];
 
     $response = $mj->post(Resources::$Email, ['body' => $body]);
-    $response->success() && var_dump($response->getData());
 }
 
 function verify_email($email, $conn, $type){
