@@ -1,10 +1,8 @@
 <?php
 require ("../vendor/autoload.php");
+require ("../aws/aws-autoloader.php");
 use \Mailjet\Resources;
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 $myObj = (object)array();
 
 if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
@@ -35,9 +33,27 @@ if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
                     $statement->bind_param("sssssis", $name, $last, $org, $email, $password, $activation, $token);
                     $statement->execute();
 
+                    $getId = $conn->prepare("SELECT `id` FROM `user_entrepreneur` WHERE `name`=? AND `last_name`=? AND `organization`=? AND `email`=? AND `password`=?");
+                    $getId->bind_param("sssss", $name, $last, $org, $email, $password);
+                    $getId->execute();
+
+                    $getResults = $getId->get_result();
+                    if($getResults->num_rows > 0  && $getResults->num_rows < 2) {
+                        $rowVal = $getResults->fetch_assoc();
+                        $id = $rowVal["id"];
+
+                        try{
+                            create_s3_bucket(1, $id);
+                        } catch (Exception $e){
+
+                        }
+                    }
+
                     send_email($email, $name);
 
                     $myObj->res = "success";
+                    $myObj->type = "1";
+                    $myObj->token = $token;
                     $JSON = json_encode($myObj);
                     echo $JSON;
                 } else {
@@ -58,9 +74,26 @@ if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
                     $statement->bind_param("sssssis", $name, $last, $org, $email, $password, $activation, $token);
                     $statement->execute();
 
+                    $getId = $conn->prepare("SELECT `id` FROM `user_investor` WHERE `name`=? AND `last_name`=? AND `organization`=? AND `email`=? AND `password`=?");
+                    $getId->bind_param("sssss", $name, $last, $org, $email, $password);
+                    $getId->execute();
+
+                    $getResults = $getId->get_result();
+                    if($getResults->num_rows > 0  && $getResults->num_rows < 2) {
+                        $rowVal = $getResults->fetch_assoc();
+                        $id = $rowVal["id"];
+                        try{
+                            create_s3_bucket(2, $id);
+                        } catch (Exception $e){
+
+                        }
+                    }
+
                     send_email($email, $name);
 
                     $myObj->res = "success";
+                    $myObj->type = "2";
+                    $myObj->token = $token;
                     $JSON = json_encode($myObj);
                     echo $JSON;
                 } else {
@@ -136,4 +169,45 @@ function verify_email($email, $conn, $type){
     }
 
     return $validEmail;
+}
+
+function create_s3_bucket($type, $id){
+    $bucket_set = false;
+
+    if ($type == 1){
+        $bucketName = 'vventureent';
+        $bucket_set = true;
+    } elseif ($type == 2){
+        $bucketName = 'vventureinv';
+        $bucket_set = true;
+    }
+
+    if ($bucket_set == true){
+        $IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
+        $IAM_SECRET = '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';
+
+        try {
+            $s3 = new Aws\S3\S3Client([ // Set Amazon S3 Credentials
+                'version' => 'latest',
+                'region'  => 'us-east-2',
+                'credentials' => [
+                    'key' => $IAM_KEY,
+                    'secret' => $IAM_SECRET,
+                ]
+            ]);
+        } catch (Exception $e) {
+            die();
+        }
+
+        try {
+            $s3->putObject(array( // create empty folder in s3
+                'Bucket' => $bucketName,
+                'Key'    => $id."/",
+                'Body'   => "",
+                'ACL'    => 'public-read'
+            ));
+        } catch (Exception $e) {
+            die();
+        }
+    }
 }
