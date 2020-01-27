@@ -1,8 +1,10 @@
 <?php
 require ("../vendor/autoload.php");
 use \Mailjet\Resources;
-date_default_timezone_set('America/Guayaquil');
-$date = date('Y/m/d H:i:s');
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
     require_once ("../connection.php");
