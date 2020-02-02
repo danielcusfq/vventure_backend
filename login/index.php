@@ -1,14 +1,14 @@
 <?php
 $myObj = (object)array();
 
-if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
+if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
     require_once ("../connection.php");
 
-    $type = mysqli_real_escape_string($conn, $_GET["type"]);
-    $email = mysqli_real_escape_string($conn, $_GET["email"]);
+    $type = mysqli_real_escape_string($conn, $_POST["type"]);
+    $email = mysqli_real_escape_string($conn, $_POST["email"]);
     $email = $string = preg_replace('/\s+/','',$email);
     $email = strtolower($email);
-    $password = $_GET["password"];
+    $password = $_POST["password"];
 
     if ($type == 1){
         $password = $password.$email."entrepreneur";
