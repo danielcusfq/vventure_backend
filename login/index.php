@@ -13,7 +13,8 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
     if ($type == 1){
         $password = $password.$email."entrepreneur";
         $user = verify_user($conn, 1, $email, $password);
-        if ($user->get_token() != null && $user->get_activation() != null){
+
+        if ($user->get_token() != null || $user->get_activation() != null){
             $token = $user->get_token();
             $activation = $user->get_activation();
 
@@ -31,7 +32,7 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
     } else if ($type == 2){
         $password = $password.$email."investor";
         $user = verify_user($conn, 2, $email, $password);
-        if ($user->get_token() != null && $user->get_activation() != null){
+        if ($user->get_token() != null || $user->get_activation() != null){
             $token = $user->get_token();
             $activation = $user->get_activation();
 

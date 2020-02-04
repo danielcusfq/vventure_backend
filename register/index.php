@@ -5,17 +5,17 @@ use \Mailjet\Resources;
 
 $myObj = (object)array();
 
-if (isset($_GET["ok"]) && $_GET["ok"] == "ok"){
+if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
     require_once ("../connection.php");
 
-    $type = mysqli_real_escape_string($conn, $_GET["type"]);
-    $name = mysqli_real_escape_string($conn, $_GET["name"]);
-    $last = mysqli_real_escape_string($conn, $_GET["last"]);
-    $org = mysqli_real_escape_string($conn, $_GET["org"]);
-    $email = mysqli_real_escape_string($conn, $_GET["email"]);
+    $type = mysqli_real_escape_string($conn, $_POST["type"]);
+    $name = mysqli_real_escape_string($conn, $_POST["name"]);
+    $last = mysqli_real_escape_string($conn, $_POST["last"]);
+    $org = mysqli_real_escape_string($conn, $_POST["org"]);
+    $email = mysqli_real_escape_string($conn, $_POST["email"]);
     $string = preg_replace('/\s+/','',$email);
     $email = strtolower($email);
-    $password = mysqli_real_escape_string($conn, $_GET["password"]);
+    $password = mysqli_real_escape_string($conn, $_POST["password"]);
     $activation = 0;
 
     if (!empty($type) || !empty($name) || !empty($last) || !empty($org) || !empty($email) || !empty($password)){
@@ -140,7 +140,7 @@ function send_email($email, $name){
                 ],
                 'Subject' => "Bienvenido",
                 'TextPart' => "Bienvenido",
-                'HTMLPart' => "Hola $name <br> Te damos la vienbenida a vventure",
+                'HTMLPart' => "Hola $name <br> Te damos la Bienvenida a vventure",
             ]
         ]
     ];
