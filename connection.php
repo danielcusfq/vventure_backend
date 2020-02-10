@@ -7,7 +7,6 @@ $password = "daniel123qwe";
 $dbname = "vventure";
 
 $conn = new mysqli($host, $user, $password, $dbname, $port, $socket)
-or die ('');
+or die('');
 
 $conn->set_charset("utf8");
-

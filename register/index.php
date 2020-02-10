@@ -5,7 +5,8 @@ use \Mailjet\Resources;
 
 $myObj = (object)array();
 
-if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
+// verifies it comes from authorized device
+if (isset($_POST["auth"]) && $_POST["auth"] == "f82d371b7c8178f9632c83cb33bd3cfe4f8ae7847394a0ff3513f5d679ff5fb3"){
     require_once ("../connection.php");
 
     $type = mysqli_real_escape_string($conn, $_POST["type"]);
@@ -18,21 +19,29 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
     $password = mysqli_real_escape_string($conn, $_POST["password"]);
     $activation = 0;
 
+    //verifies fields are not empty
     if (!empty($type) || !empty($name) || !empty($last) || !empty($org) || !empty($email) || !empty($password)){
+        // verifies is a valid email
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            if ($type == 1){ // entrepreneur account
+            // verifies is a entrepreneur account
+            if ($type == 1){
+                //verifies email is not taken
                 if (verify_email($email, $conn, 1)){
+                    //hashing password
                     $conf = array('cost'=>8);
                     $password = $password.$email."entrepreneur";
                     $password = password_hash($password, PASSWORD_BCRYPT, $conf);
 
+                    // creates user token
                     $token = $password.$email."entrepreneur";
                     $token = password_hash($token, PASSWORD_BCRYPT, $conf);
 
+                    // inserts user into DB
                     $statement = $conn->prepare("INSERT INTO `user_entrepreneur`(`name`, `last_name`, `organization`, `email`, `password`, `activation`, `token`) VALUES (?,?,?,?,?,?,?)");
                     $statement->bind_param("sssssis", $name, $last, $org, $email, $password, $activation, $token);
                     $statement->execute();
 
+                    // gets the id of the user
                     $getId = $conn->prepare("SELECT `id` FROM `user_entrepreneur` WHERE `name`=? AND `last_name`=? AND `organization`=? AND `email`=? AND `password`=?");
                     $getId->bind_param("sssss", $name, $last, $org, $email, $password);
                     $getId->execute();
@@ -42,6 +51,7 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
                         $rowVal = $getResults->fetch_assoc();
                         $id = $rowVal["id"];
 
+                        // creates s3 folder
                         try{
                             create_s3_bucket(1, $id);
                         } catch (Exception $e){
@@ -49,8 +59,10 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
                         }
                     }
 
+                    // sends welcome email to user
                     send_email($email, $name);
 
+                    // encodes jason and send response
                     $myObj->res = "success";
                     $myObj->type = "1";
                     $myObj->token = $token;
@@ -62,18 +74,23 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
                     echo $JSON;
                 }
             } elseif ($type == 2){ // investor account
+                // verifies email is not taken
                 if (verify_email($email, $conn, 2)){
+                    // hashing password
                     $conf = array('cost'=>8);
                     $password = $password.$email."investor";
                     $password = password_hash($password, PASSWORD_BCRYPT, $conf);
 
+                    // creates user token
                     $token = $password.$email."investor";
                     $token = password_hash($token, PASSWORD_BCRYPT, $conf);
 
+                    // inserts user into DB
                     $statement = $conn->prepare("INSERT INTO `user_investor`(`name`, `last_name`, `organization`, `email`, `password`, `activation`, `token`) VALUES (?,?,?,?,?,?,?)");
                     $statement->bind_param("sssssis", $name, $last, $org, $email, $password, $activation, $token);
                     $statement->execute();
 
+                    // get user id from DB
                     $getId = $conn->prepare("SELECT `id` FROM `user_investor` WHERE `name`=? AND `last_name`=? AND `organization`=? AND `email`=? AND `password`=?");
                     $getId->bind_param("sssss", $name, $last, $org, $email, $password);
                     $getId->execute();
@@ -82,6 +99,8 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
                     if($getResults->num_rows > 0  && $getResults->num_rows < 2) {
                         $rowVal = $getResults->fetch_assoc();
                         $id = $rowVal["id"];
+
+                        // creates s3 folder
                         try{
                             create_s3_bucket(2, $id);
                         } catch (Exception $e){
@@ -89,8 +108,10 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
                         }
                     }
 
+                    // send welcome email
                     send_email($email, $name);
 
+                    // encodes json and send response
                     $myObj->res = "success";
                     $myObj->type = "2";
                     $myObj->token = $token;
@@ -122,9 +143,12 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
     echo $JSON;
 }
 
+// send email to user with welcome message
 function send_email($email, $name){
+    // set mailjet credentials
     $mj = new \Mailjet\Client('fe5ff2652b29d928de4ea0852d57aa6f','55951c0c7976fedadeec2c7c6bc3140c',true,['version' => 'v3.1']);
 
+    // constructs email body
     $body = [
         'Messages' => [
             [
@@ -145,9 +169,11 @@ function send_email($email, $name){
         ]
     ];
 
-    $response = $mj->post(Resources::$Email, ['body' => $body]);
+    //sends verification email
+    $mj->post(Resources::$Email, ['body' => $body]);
 }
 
+// verifies the email address is not taken
 function verify_email($email, $conn, $type){
     if ($type == 1){
         $validationStmt = $conn->prepare("SELECT `id` FROM `user_entrepreneur` WHERE `email`=?");
@@ -171,6 +197,7 @@ function verify_email($email, $conn, $type){
     return $validEmail;
 }
 
+// creates an empty s3 bucket folder with the id of the user and makes it public
 function create_s3_bucket($type, $id){
     $bucket_set = false;
 

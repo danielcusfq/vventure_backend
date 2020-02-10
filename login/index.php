@@ -1,7 +1,10 @@
 <?php
+include ("../auth/Auth_Info.php");
+
 $myObj = (object)array();
 
-if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
+// verifies it comes from authorized device
+if (isset($_POST["auth"]) && $_POST["auth"] == "607be6747e2a18f043221b6528785169e4a391fa17c12b45dc44289387bd9cbb"){
     require_once ("../connection.php");
 
     $type = mysqli_real_escape_string($conn, $_POST["type"]);
@@ -10,11 +13,12 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
     $email = strtolower($email);
     $password = $_POST["password"];
 
+    // verifies the account is an entrepreneur
     if ($type == 1){
         $password = $password.$email."entrepreneur";
         $user = verify_user($conn, 1, $email, $password);
 
-        if ($user->get_token() != null || $user->get_activation() != null){
+        if ($user->get_token() != null && $user->get_activation() != null){
             $token = $user->get_token();
             $activation = $user->get_activation();
 
@@ -29,10 +33,11 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
             $JSON = json_encode($myObj);
             echo $JSON;
         }
-    } else if ($type == 2){
+    } else if ($type == 2){ // verifies account is an investor
         $password = $password.$email."investor";
         $user = verify_user($conn, 2, $email, $password);
-        if ($user->get_token() != null || $user->get_activation() != null){
+
+        if ($user->get_token() != null && $user->get_activation() != null){
             $token = $user->get_token();
             $activation = $user->get_activation();
 
@@ -53,20 +58,21 @@ if (isset($_POST["ok"]) && $_POST["ok"] == "ok"){
         echo $JSON;
     }
 } else {
-    $myObj->res = "error no get";
+    $myObj->res = "error malformed form";
     $JSON = json_encode($myObj);
     echo $JSON;
 }
 
+// authenticates user and returns authentication information
 function verify_user($conn, $type, $email, $password){
     $validQuery = true;
 
     if ($type == 1){
-        $validationStmt = $conn->prepare("SELECT `id`, `password`, `activation`, `token` FROM `user_entrepreneur` WHERE `email`=? ");
+        $validationStmt = $conn->prepare("SELECT `password`, `activation`, `token` FROM `user_entrepreneur` WHERE `email`=? ");
     } elseif ($type == 2){
-        $validationStmt = $conn->prepare("SELECT `id`, `password`, `activation`, `token` FROM `user_investor` WHERE `email`=? ");
+        $validationStmt = $conn->prepare("SELECT `password`, `activation`, `token` FROM `user_investor` WHERE `email`=? ");
     } else {
-        $validQuery = false;
+        return false;
     }
 
     if ($validQuery == true){
@@ -88,29 +94,5 @@ function verify_user($conn, $type, $email, $password){
         }
     } else {
         return new Auth_Info(null, null);
-    }
-}
-
-class Auth_Info {
-    private $token;
-    private $activation;
-
-    public function __construct($token, $activation){
-        $this->set_token($token);
-        $this->set_activation($activation);
-    }
-
-    function set_token($token) {
-        $this->token = $token;
-    }
-    function get_token() {
-        return $this->token;
-    }
-
-    function set_activation($activation) {
-        $this->activation = $activation;
-    }
-    function get_activation() {
-        return $this->activation;
     }
 }
