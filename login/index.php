@@ -18,7 +18,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "607be6747e2a18f043221b6528785169
         $password = $password.$email."entrepreneur";
         $user = verify_user($conn, 1, $email, $password);
 
-        if ($user->get_token() != null && $user->get_activation() != null){
+        if ($user->get_token() != null){
             $token = $user->get_token();
             $activation = $user->get_activation();
 
@@ -37,7 +37,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "607be6747e2a18f043221b6528785169
         $password = $password.$email."investor";
         $user = verify_user($conn, 2, $email, $password);
 
-        if ($user->get_token() != null && $user->get_activation() != null){
+        if ($user->get_token() != null){
             $token = $user->get_token();
             $activation = $user->get_activation();
 
