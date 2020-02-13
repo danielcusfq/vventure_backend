@@ -19,11 +19,13 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "607be6747e2a18f043221b6528785169
         $user = verify_user($conn, 1, $email, $password);
 
         if ($user->get_token() != null){
+            $id = $user->get_id();
             $token = $user->get_token();
             $activation = $user->get_activation();
 
             $myObj->res = "success";
             $myObj->type = "1";
+            $myObj->id = $id;
             $myObj->token = $token;
             $myObj->activation = $activation;
             $JSON = json_encode($myObj);
@@ -38,11 +40,13 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "607be6747e2a18f043221b6528785169
         $user = verify_user($conn, 2, $email, $password);
 
         if ($user->get_token() != null){
+            $id = $user->get_id();
             $token = $user->get_token();
             $activation = $user->get_activation();
 
             $myObj->res = "success";
             $myObj->type = "2";
+            $myObj->id = $id;
             $myObj->token = $token;
             $myObj->activation = $activation;
             $JSON = json_encode($myObj);
@@ -68,9 +72,9 @@ function verify_user($conn, $type, $email, $password){
     $validQuery = true;
 
     if ($type == 1){
-        $validationStmt = $conn->prepare("SELECT `password`, `activation`, `token` FROM `user_entrepreneur` WHERE `email`=? ");
+        $validationStmt = $conn->prepare("SELECT `id`, `password`, `activation`, `token` FROM `user_entrepreneur` WHERE `email`=? ");
     } elseif ($type == 2){
-        $validationStmt = $conn->prepare("SELECT `password`, `activation`, `token` FROM `user_investor` WHERE `email`=? ");
+        $validationStmt = $conn->prepare("SELECT `id`, `password`, `activation`, `token` FROM `user_investor` WHERE `email`=? ");
     } else {
         return false;
     }
@@ -83,16 +87,16 @@ function verify_user($conn, $type, $email, $password){
         if($validationResult->num_rows > 0  && $validationResult->num_rows < 2) {
             $rowVal = $validationResult->fetch_assoc();
             if(password_verify($password, $rowVal["password"])) {
-                $auth_info = new Auth_Info($rowVal["token"], $rowVal["activation"]);
+                $auth_info = new Auth_Info($rowVal["id"], $rowVal["token"], $rowVal["activation"]);
                 return $auth_info;
             } else {
-                return new Auth_Info(null, null);
+                return new Auth_Info(null, null, null);
             }
         }
         else {
-            return new Auth_Info(null, null);
+            return new Auth_Info(null,null, null);
         }
     } else {
-        return new Auth_Info(null, null);
+        return new Auth_Info(null, null, null);
     }
 }

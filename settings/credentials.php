@@ -1,0 +1,6 @@
+<?php
+
+$IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
+$IAM_SECRET = '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';
+$MAIL_JET_key = 'fe5ff2652b29d928de4ea0852d57aa6f';
+$MEIL_JET_SECRET = '55951c0c7976fedadeec2c7c6bc3140c';

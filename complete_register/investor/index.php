@@ -1,24 +1,24 @@
 <?php
 require ("../../aws/aws-autoloader.php");
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $myObj = (object)array();
 
 // verifies it comes from authorized device
-if (isset($_POST["auth"]) && $_POST["auth"] == "b2df705644a0c7ff7dd469afa096c56d6da918cfcf827d69631dcacfccf54fa5"){
+if (isset($_POST["auth"]) && $_POST["auth"] == "a5d2f6ffbaeb6e229e05e0b2e6a9136473778c0160d3a4d07f4c380067b3c2cd"){
     require ("../../connection.php");
 
     $token = $_POST["token"];
     $type = mysqli_real_escape_string($conn,$_POST["type"]);
     $image = "";
-    $stage = mysqli_real_escape_string($conn,$_POST["stage"]);
-    $percentage = mysqli_real_escape_string($conn,$_POST["percentage"]);
-    $exchange = mysqli_real_escape_string($conn,$_POST["exchange"]);
-    $problem = mysqli_real_escape_string($conn,$_POST["problem"]);
-    $solution = mysqli_real_escape_string($conn,$_POST["solution"]);
+    $interest = mysqli_real_escape_string($conn,$_POST["interests"]);
+    $background = mysqli_real_escape_string($conn,$_POST["background"]);
     $video = "";
     $activation = 1;
 
-    if (isset($_POST["token"]) && isset($_POST["type"]) && $type == "1"){
+    if (isset($_POST["token"]) && isset($_POST["type"]) && $type == "2"){
         // authenticate user and returns id
         $id = auth_user($token, $type, $conn);
 
@@ -31,17 +31,17 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "b2df705644a0c7ff7dd469afa096c56d
             }
 
             // inserts basic profile info to DB
-            $insertStatement = $conn->prepare("INSERT INTO `profile_entrepreneur`(`id_entrepreneur`, `stage`, `stake`, `stake_info`, `problem`, `solution`, `profile_picture`, `profile_video`) VALUES (?,?,?,?,?,?,?,?)");
-            $insertStatement->bind_param("isisssss", $id, $stage, $percentage, $exchange, $problem, $solution, $image, $video);
+            $insertStatement = $conn->prepare("INSERT INTO `profile_investor`(`id_investor`, `profile_picture`, `profile_video`, `interests`, `background`) VALUES (?,?,?,?,?)");
+            $insertStatement->bind_param("issss", $id, $image, $video, $interest, $background);
             $insertStatement->execute();
 
             // updates activation value to 1 from user
-            $uploadStatement = $conn->prepare("UPDATE `user_entrepreneur` SET `activation`=? WHERE `id`=? AND `token`=? ");
+            $uploadStatement = $conn->prepare("UPDATE `user_investor` SET `activation`=? WHERE `id`=? AND `token`=? ");
             $uploadStatement->bind_param("iis", $activation, $id, $token);
             $uploadStatement->execute();
 
             // obtains all data to form the json response
-            $authInfo = $conn->prepare("SELECT `token`, `activation` FROM `user_entrepreneur` WHERE `id`=? AND `token`=?");
+            $authInfo = $conn->prepare("SELECT `token`, `activation` FROM `user_investor` WHERE `id`=? AND `token`=?");
             $authInfo->bind_param("is", $id, $token);
             $authInfo->execute();
             $authResults = $authInfo->get_result();
@@ -53,8 +53,8 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "b2df705644a0c7ff7dd469afa096c56d
                 $activation = $row["activation"];
 
                 $myObj->res = "success";
-                $myObj->type = "1";
                 $myObj->id = $id;
+                $myObj->type = "2";
                 $myObj->token = $token;
                 $myObj->activation = $activation;
                 $JSON = json_encode($myObj);
@@ -82,8 +82,8 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "b2df705644a0c7ff7dd469afa096c56d
 
 // authenticate user and returns id
 function auth_user($token, $type, $conn){
-    if ($type == 1){
-        $validationStmt = $conn->prepare("SELECT `id` FROM `user_entrepreneur` WHERE `token`=?");
+    if ($type == 2){
+        $validationStmt = $conn->prepare("SELECT `id` FROM `user_investor` WHERE `token`=?");
     } else {
         return false;
     }
@@ -107,7 +107,7 @@ function auth_user($token, $type, $conn){
 function uploadImage($id){
     $empty = "https://vventuregeneral.s3.us-east-2.amazonaws.com/empty_profile.png";
     if (isset($_POST['image']) && !empty($_POST['image'])){
-        $bucketName = 'vventureent';
+        $bucketName = 'vventureinv';
         $IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
         $IAM_SECRET = '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';
 
@@ -115,8 +115,8 @@ function uploadImage($id){
         $extension = $_POST['ext'];
         $name = $id."ProfilePic.".$extension;
         file_put_contents($name, $image);
-        chmod("/var/www/html/complete_register/entrepreneur/".$name, 0755);
-        $file = "/var/www/html/complete_register/entrepreneur/".$name;
+        chmod("/var/www/html/complete_register/investor/".$name, 0755);
+        $file = "/var/www/html/complete_register/investor/".$name;
 
         // Set Amazon S3 Credentials
         try {
@@ -156,7 +156,7 @@ function uploadImage($id){
             die();
         }
 
-        @unlink("/var/www/html/complete_register/entrepreneur/".$name);
+        @unlink("/var/www/html/complete_register/investor/".$name);
         clearstatcache();
 
         return $url;

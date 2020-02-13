@@ -3,10 +3,19 @@
 class Auth_Info {
     private $token;
     private $activation;
+    private $id;
 
-    public function __construct($token, $activation){
+    public function __construct($id, $token, $activation){
+        $this->set_id($id);
         $this->set_token($token);
         $this->set_activation($activation);
+    }
+
+    function set_id($id) {
+        $this->id = $id;
+    }
+    function get_id() {
+        return $this->id;
     }
 
     function set_token($token) {
