@@ -21,51 +21,56 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "a5d2f6ffbaeb6e229e05e0b2e6a91364
     if (isset($_POST["token"]) && isset($_POST["type"]) && $type == "2"){
         // authenticate user and returns id
         $id = auth_user($token, $type, $conn);
+        if (!empty($interest) && !empty($background)){
+            if ($id != false){
+                if (isset($_POST["image"]) && !empty($_POST["image"])){
+                    // upload image to aws s3
+                    $image = uploadImage($id);
+                } else {
+                    $image = "https://vventuregeneral.s3.us-east-2.amazonaws.com/empty_profile.png";
+                }
 
-        if ($id != false){
-            if (isset($_POST["image"]) && !empty($_POST["image"])){
-                // upload image to aws s3
-                $image = uploadImage($id);
-            } else {
-                $image = "https://vventuregeneral.s3.us-east-2.amazonaws.com/empty_profile.png";
-            }
+                // inserts basic profile info to DB
+                $insertStatement = $conn->prepare("INSERT INTO `profile_investor`(`id_investor`, `profile_picture`, `profile_video`, `interests`, `background`) VALUES (?,?,?,?,?)");
+                $insertStatement->bind_param("issss", $id, $image, $video, $interest, $background);
+                $insertStatement->execute();
 
-            // inserts basic profile info to DB
-            $insertStatement = $conn->prepare("INSERT INTO `profile_investor`(`id_investor`, `profile_picture`, `profile_video`, `interests`, `background`) VALUES (?,?,?,?,?)");
-            $insertStatement->bind_param("issss", $id, $image, $video, $interest, $background);
-            $insertStatement->execute();
+                // updates activation value to 1 from user
+                $uploadStatement = $conn->prepare("UPDATE `user_investor` SET `activation`=? WHERE `id`=? AND `token`=? ");
+                $uploadStatement->bind_param("iis", $activation, $id, $token);
+                $uploadStatement->execute();
 
-            // updates activation value to 1 from user
-            $uploadStatement = $conn->prepare("UPDATE `user_investor` SET `activation`=? WHERE `id`=? AND `token`=? ");
-            $uploadStatement->bind_param("iis", $activation, $id, $token);
-            $uploadStatement->execute();
+                // obtains all data to form the json response
+                $authInfo = $conn->prepare("SELECT `token`, `activation` FROM `user_investor` WHERE `id`=? AND `token`=?");
+                $authInfo->bind_param("is", $id, $token);
+                $authInfo->execute();
+                $authResults = $authInfo->get_result();
 
-            // obtains all data to form the json response
-            $authInfo = $conn->prepare("SELECT `token`, `activation` FROM `user_investor` WHERE `id`=? AND `token`=?");
-            $authInfo->bind_param("is", $id, $token);
-            $authInfo->execute();
-            $authResults = $authInfo->get_result();
+                // verifies we get a row with the results and send json back
+                if ($authResults->num_rows == 1) {
+                    $row = $authResults->fetch_assoc();
+                    $token = $row["token"];
+                    $activation = $row["activation"];
 
-            // verifies we get a row with the results and send json back
-            if ($authResults->num_rows == 1) {
-                $row = $authResults->fetch_assoc();
-                $token = $row["token"];
-                $activation = $row["activation"];
-
-                $myObj->res = "success";
-                $myObj->id = $id;
-                $myObj->type = "2";
-                $myObj->token = $token;
-                $myObj->activation = $activation;
-                $JSON = json_encode($myObj);
-                echo $JSON;
+                    $myObj->res = "success";
+                    $myObj->id = $id;
+                    $myObj->type = "2";
+                    $myObj->token = $token;
+                    $myObj->activation = $activation;
+                    $JSON = json_encode($myObj);
+                    echo $JSON;
+                } else {
+                    $myObj->res = "User Authentication Error";
+                    $JSON = json_encode($myObj);
+                    echo $JSON;
+                }
             } else {
                 $myObj->res = "User Authentication Error";
                 $JSON = json_encode($myObj);
                 echo $JSON;
             }
         } else {
-            $myObj->res = "User Authentication Error";
+            $myObj->res = "empty";
             $JSON = json_encode($myObj);
             echo $JSON;
         }

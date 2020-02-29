@@ -7,7 +7,7 @@ if (isset($_GET["auth"]) && $_GET["auth"] = "9275b806411f4d3f3285ba9022c798d7ca4
     require_once ("../../connection.php");
 
     $activation = 1;
-    $getUsers =$conn->prepare("SELECT user_entrepreneur.id, user_entrepreneur.name, user_entrepreneur.last_name, user_entrepreneur.organization, 
+    $getUsers =$conn->prepare("SELECT user_entrepreneur.id, profile_entrepreneur.stage, user_entrepreneur.organization, 
                     profile_entrepreneur.profile_picture FROM profile_entrepreneur JOIN user_entrepreneur WHERE profile_entrepreneur.id_entrepreneur=user_entrepreneur.id 
                     AND user_entrepreneur.activation=?");
     $getUsers->bind_param("i", $activation);
@@ -24,8 +24,7 @@ if (isset($_GET["auth"]) && $_GET["auth"] = "9275b806411f4d3f3285ba9022c798d7ca4
             $userInfo = (Object) array();
 
             $userInfo->id = $row['id'];
-            $userInfo->name = $row['name'];
-            $userInfo->last = $row['last_name'];
+            $userInfo->stage = $row['stage'];
             $userInfo->organization = $row['organization'];
             $userInfo->image = $row['profile_picture'];
 

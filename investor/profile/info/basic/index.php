@@ -88,6 +88,25 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
 
     $myObj->images = $userImages;
 
+    $userTimeline = array();
+    $getTimeline = $conn->prepare("SELECT timeline_investor.id_timeline, timeline_investor.description, timeline_investor.position 
+                    FROM timeline_investor JOIN user_investor WHERE timeline_investor.id_investor=user_investor.id AND user_investor.id=?");
+    $getTimeline->bind_param("i", $id);
+    $getTimeline->execute();
+    $getTimelineResults = $getTimeline->get_result();
+    if ($getTimelineResults->num_rows > 0) {
+        while ($row = $getTimelineResults->fetch_assoc()) {
+            $tl = (object) array();
+
+            $tl->id = $row['id_timeline'];
+            $tl->iduser = $id;
+            $tl->detail = $row['description'];
+            $tl->position = $row['position'];
+            array_push($userTimeline, $tl);
+        }
+    }
+
+    $myObj->timeline = $userTimeline;
     $JSON = json_encode($myObj);
     echo $JSON;
 } else {
