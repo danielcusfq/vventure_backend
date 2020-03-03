@@ -15,6 +15,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "58c9f66f088872805a34ebbe24f971f8
             $token = $_POST['token'];
             $image = base64_decode($_POST['image']);
             $extension = $_POST['ext'];
+            $extension = strtolower($extension);
             $salt = substr(sha1($id . date("h:i:sa") . "entrepreneur"), 15);
             $name = $id . "ProfileImage" . $salt . "." . $extension;
 

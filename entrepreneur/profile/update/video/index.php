@@ -15,6 +15,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "2d75b3c9f1a0986361022cc789546001
             $token = $_POST['token'];
             $video = base64_decode($_POST['video']);
             $extension = $_POST['ext'];
+            $extension = strtolower($extension);
             $salt = substr(sha1($id . date("h:i:sa") . "entrepreneur"), 15);
             $name = $id . "ProfileVideo" . $salt . "." . $extension;
 
