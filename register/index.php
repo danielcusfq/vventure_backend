@@ -159,12 +159,50 @@ function send_email($email, $name){
                 'To' => [
                     [
                         'Email' => "$email",
-                        'Name' => "Daniel Cabrera"
                     ]
                 ],
                 'Subject' => "Bienvenido",
                 'TextPart' => "Bienvenido",
-                'HTMLPart' => "Hola $name <br> Te damos la Bienvenida a vventure",
+                'HTMLPart' => "<body style='width: 600px; margin: 0; padding: 0; background-color: whitesmoke'>
+                                    <div class='header' style='width: 100%; background-color: white' align='center'>
+                                        <img src='https://vventuregeneral.s3.us-east-2.amazonaws.com/vventure-logo.png' style='height: 70px' alt='VVENTURE'>
+                                    </div>
+                                    <div style='width: 100%; background-color: white; margin-top: 25px' align='center'>
+                                        <div style='padding-top: 35px; width: 100%'>
+                                            <table>
+                                                <tr align='center'>
+                                                    <td style=\"font-family: 'Calibri Light'; font-size: 24px; font-weight: bold\" align='center'>
+                                                    Hola
+                                                    </td>
+                                                </tr>
+                                                <tr align='center'>
+                                                    <td style=\"font-family: 'Calibri Light'; font-size: 18px; font-weight: bold\" align='center'>
+                                                        ".$name."
+                                                    </td>
+                                                </tr>
+                                                <tr align='center'>
+                                                    <td style=\"font-family: 'Calibri Light'; font-size: 24px; font-weight: bold; padding-top: 25px\" align='center'>
+                                                    Te damos la Bienvenida a
+                                                    </td>
+                                                </tr>
+                                                <tr align='center'>
+                                                    <td style=\"font-family: 'Calibri Light'; font-size: 18px; font-weight: lighter; padding-top: 25px\" align='center'>
+                                                        VVENTURE
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div style='padding-bottom: 50px'></div>
+                                    </div>
+                                    
+                                    <div style='width: 100%; margin-top: 25px; background-color: white; padding: 25px 0 25px 0' align='center'>
+                                        <div align='center' style=\"font-family: 'Calibri Light'; font-size: 18px; font-weight: lighter\">
+                                            Gracias Por Preferirnos
+                                        </div>
+                                    </div>
+                                    
+                                    </body>
+                                    ",
             ]
         ]
     ];

@@ -1,6 +1,5 @@
 <?php
 
-
 require_once('../../../validation/Validation.php');
 $myObj = (object)array();
 

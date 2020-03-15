@@ -3,18 +3,18 @@
 require_once('../../../validation/Validation.php');
 $myObj = (object)array();
 
-if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && $_GET['auth'] == '260371ba113efbd41d041970b40b22ce1b9d56b05710cf1453fa739bdd23e71e') {
+if (isset($_GET{'id'}) && isset($_GET['token'])  && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && $_GET['auth'] == '6d0210379efe392a654aa989d4ac1cfe4d4f1719e1906f695c302926b7c296e6') {
     require("../../../connection.php");
     $id = $_GET['id'];
-    $type = 1;
+    $type = 2;
     $token = $_GET['token'];
     $activation = 1;
     $inspected = 1;
 
     if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
-        $getUsers = $conn->prepare("SELECT inspection.id_inspection, user_investor.id,  user_investor.organization, user_investor.name, user_investor.last_name, 
-                    profile_investor.profile_picture FROM profile_investor JOIN user_investor JOIN inspection WHERE profile_investor.id_investor=user_investor.id 
-                    AND user_investor.activation=? AND inspection.inspected=? AND inspection.id_investor=user_investor.id AND inspection.id_entrepreneur=? ORDER BY inspection.id_inspection DESC ");
+        $getUsers =$conn->prepare("SELECT inspection.id_inspection, user_entrepreneur.id, profile_entrepreneur.stage, user_entrepreneur.organization, 
+                    profile_entrepreneur.profile_picture FROM profile_entrepreneur JOIN user_entrepreneur JOIN inspection WHERE profile_entrepreneur.id_entrepreneur=user_entrepreneur.id 
+                    AND user_entrepreneur.activation=? AND inspection.inspected=? AND inspection.id_entrepreneur=user_entrepreneur.id AND inspection.id_investor=? ORDER BY inspection.id_inspection DESC ");
         $getUsers->bind_param("iii", $activation, $inspected, $id);
         $getUsers->execute();
         $getUsersResults = $getUsers->get_result();
@@ -25,12 +25,11 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
 
         if ($getUsersResults->num_rows > 0) {
             $noUsers = false;
-            while ($row = $getUsersResults->fetch_assoc()) {
-                $userInfo = (Object)array();
+            while($row = $getUsersResults->fetch_assoc()){
+                $userInfo = (Object) array();
 
                 $userInfo->id = $row['id'];
-                $userInfo->name = $row['name'];
-                $userInfo->last = $row['last_name'];
+                $userInfo->stage = $row['stage'];
                 $userInfo->organization = $row['organization'];
                 $userInfo->image = $row['profile_picture'];
                 $userInfo->inspection = $row['id_inspection'];
@@ -58,4 +57,3 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
     $JSON = json_encode($myObj);
     echo $JSON;
 }
-
