@@ -112,7 +112,15 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['investor']) && !
 
         $myObj->timeline = $userTimeline;
 
-        $myObj->infavorites = false;
+        $getFavorite = $conn->prepare("SELECT id_favorite FROM favorites_entrepreneur WHERE id_entrepreneur=? AND id_investor=?");
+        $getFavorite->bind_param("ii", $id, $investor);
+        $getFavorite->execute();
+        $getFavoriteResults = $getFavorite->get_result();
+        if ($getFavoriteResults->num_rows == 1) {
+            $myObj->infavorites = true;
+        } else {
+            $myObj->infavorites = false;
+        }
 
         $JSON = json_encode($myObj);
         echo $JSON;
