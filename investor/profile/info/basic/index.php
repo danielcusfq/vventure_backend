@@ -4,9 +4,11 @@ $myObj = (object)array();
 
 if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && $_GET['auth'] == "dbfc41327aa4e3658bc31596579209cadf6566cffcb754645b818bc88ba4ec19"){
     require_once("../../../../connection.php");
+    //gets data
     $id = $_GET{'id'};
     $token = $_GET{'token'};
 
+    //prepares query
     $getProfile = $conn->prepare("SELECT user_investor.id, user_investor.organization, user_investor.name, user_investor.last_name, 
                     profile_investor.profile_picture, profile_investor.profile_video,
                     profile_investor.interests, profile_investor.background FROM user_investor JOIN profile_investor WHERE 
@@ -15,6 +17,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
     $getProfile->execute();
     $getProfileResults = $getProfile->get_result();
 
+    //fetch information
     if ($getProfileResults->num_rows == 1) {
         $row = $getProfileResults->fetch_assoc();
         $myObj->res = "success";
@@ -106,6 +109,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
         }
     }
 
+    //sends response
     $myObj->timeline = $userTimeline;
     $JSON = json_encode($myObj);
     echo $JSON;

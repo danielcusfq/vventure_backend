@@ -7,6 +7,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['inspection']) &&
     && !empty($_GET['investor']) && !empty($_GET{'id'}) &&
     !empty(isset($_GET['token'])) && $_GET['auth'] == '527c3cc5633a9b5ff37f5dade8942166915b6989d38e94f943b377a77719ebcf') {
     require("../../../connection.php");
+    //gets data
     $id = $_GET['id'];
     $token = $_GET['token'];
     $inspection = $_GET['inspection'];
@@ -15,7 +16,9 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['inspection']) &&
     $activation = 1;
     $inspected = 1;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+        //prepare query
         $getUsers = $conn->prepare("SELECT user_investor.organization, user_investor.name, user_investor.last_name, 
                     profile_investor.profile_picture, inspection.description FROM profile_investor JOIN user_investor JOIN user_entrepreneur JOIN inspection WHERE profile_investor.id_investor=user_investor.id 
                     AND inspection.inspected=? AND inspection.id_entrepreneur=user_entrepreneur.id AND inspection.id_investor=user_investor.id AND inspection.id_entrepreneur=? AND inspection.id_inspection=? AND inspection.id_investor=?");
@@ -23,6 +26,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['inspection']) &&
         $getUsers->execute();
         $getUsersResults = $getUsers->get_result();
 
+        //gets all data
         if ($getUsersResults->num_rows > 0) {
             $row = $getUsersResults->fetch_assoc();
 

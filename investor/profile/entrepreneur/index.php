@@ -5,12 +5,15 @@ $myObj = (object)array();
 if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['entrepreneur']) && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && !empty($_GET['entrepreneur']) &&
     $_GET['auth'] == "cf91a3a228ad6ca9f12b8551050eddbe1e590ffa790275fead7d237cf99969cb"){
     require_once("../../../connection.php");
+    //gets data
     $id = $_GET{'id'};
     $token = $_GET{'token'};
     $entrepreneur = $_GET['entrepreneur'];
     $type = 2;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+        //prepare query
         $getProfile = $conn->prepare("SELECT user_entrepreneur.id, user_entrepreneur.organization, user_entrepreneur.name, user_entrepreneur.last_name, 
                     profile_entrepreneur.profile_picture, profile_entrepreneur.profile_video, profile_entrepreneur.stage, 
                     profile_entrepreneur.stake, profile_entrepreneur.stake_info, profile_entrepreneur.solution, profile_entrepreneur.problem FROM user_entrepreneur JOIN profile_entrepreneur WHERE 
@@ -19,6 +22,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['entrepreneur']) 
         $getProfile->execute();
         $getProfileResults = $getProfile->get_result();
 
+        //fetch information
         if ($getProfileResults->num_rows == 1) {
             $row = $getProfileResults->fetch_assoc();
             $myObj->res = "success";
@@ -125,6 +129,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['entrepreneur']) 
             $myObj->infavorites = false;
         }
 
+        //sends response
         $JSON = json_encode($myObj);
         echo $JSON;
     } else {

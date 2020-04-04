@@ -8,7 +8,7 @@ $myObj = (object)array();
 // verifies it comes from authorized device
 if (isset($_POST["auth"]) && $_POST["auth"] == "f82d371b7c8178f9632c83cb33bd3cfe4f8ae7847394a0ff3513f5d679ff5fb3"){
     require_once ("../connection.php");
-
+    //data init
     $type = mysqli_real_escape_string($conn, $_POST["type"]);
     $name = mysqli_real_escape_string($conn, $_POST["name"]);
     $last = mysqli_real_escape_string($conn, $_POST["last"]);

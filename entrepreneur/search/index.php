@@ -6,13 +6,16 @@ $myObj = (object)array();
 if (isset($_GET["auth"]) && $_GET["auth"] = "052dcfd3508f2f4dc59b02a77358a0e17fc07b10908cd10d681d24610437408f" && !empty
         ($_GET['id']) && !empty($_GET['token']) && !empty($_GET['query'])) {
     require_once ("../../connection.php");
+    //gets data
     $id = $_GET['id'];
     $token = $_GET['token'];
     $query = mysqli_real_escape_string($conn, $_GET['query']);
     $activation = 1;
     $type = 1;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+        //prepares query
         $getUsers = $conn->prepare("SELECT user_investor.id, user_investor.name, user_investor.last_name, user_investor.organization, 
                     profile_investor.profile_picture FROM profile_investor JOIN user_investor WHERE profile_investor.id_investor=user_investor.id AND 
                     user_investor.activation=? AND (user_investor.name LIKE CONCAT( '%',?,'%') OR user_investor.last_name LIKE CONCAT( '%',?,'%') 
@@ -24,6 +27,7 @@ if (isset($_GET["auth"]) && $_GET["auth"] = "052dcfd3508f2f4dc59b02a77358a0e17fc
         $users = array();
         $lastUser = null;
 
+        //fetch users
         if ($getUsersResults->num_rows > 0) {
             while($row = $getUsersResults->fetch_assoc()){
                 $userInfo = (Object) array();
@@ -38,6 +42,7 @@ if (isset($_GET["auth"]) && $_GET["auth"] = "052dcfd3508f2f4dc59b02a77358a0e17fc
                 array_push($users, $userInfo);
             }
 
+            //send response
             $myObj->res = "success";
             $myObj->users = $users;
             $myObj->last = $lastUser;

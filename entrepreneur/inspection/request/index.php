@@ -5,6 +5,7 @@ $myObj = (object)array();
 if (isset($_POST{'id'}) && isset($_POST['token']) && isset($_POST['investor']) && !empty($_POST{'id'}) && !empty(isset($_POST['token'])
     ) && !empty($_POST['investor']) && $_POST['auth'] == "54983ad0bc722a62d3072c5173ae7824b079eaa93cebb3c6425664f2210073d3"){
     require_once("../../../connection.php");
+    //gets all data
     $id = $_POST{'id'};
     $token = $_POST{'token'};
     $investor = $_POST['investor'];
@@ -12,11 +13,14 @@ if (isset($_POST{'id'}) && isset($_POST['token']) && isset($_POST['investor']) &
     $description = "";
     $inspected = 0;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+        //prepare query
         $insertInspection = $conn->prepare("INSERT INTO `inspection` (`id_investor`, `id_entrepreneur`, `description`, `inspected`) VALUES (?,?,?,?)");
         $insertInspection->bind_param("iisi", $investor, $id, $description, $inspected);
         $insertInspection->execute();
 
+        //sends response
         $myObj->res = "success";
         $JSON = json_encode($myObj);
         echo $JSON;

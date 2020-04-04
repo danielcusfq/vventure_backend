@@ -8,6 +8,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "11b1bb7929b3348c1dc0ee17dc20b816
         if (isset($_POST['video']) && !empty($_POST['video']) && isset($_POST['ext']) && !empty($_POST['ext'])) {
             require("../../../../connection.php");
             require("../../../../aws/aws-autoloader.php");
+            //gets data
             $bucketName = 'vventureinv';
             $IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
             $IAM_SECRET = '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';
@@ -26,21 +27,24 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "11b1bb7929b3348c1dc0ee17dc20b816
                 $JSON = json_encode($myObj);
                 echo $JSON;
             } else {
+                //validates user
                 if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+                    //prepares query
                     $selectURL = $conn->prepare("SELECT `profile_video` FROM profile_investor WHERE id_investor=?");
                     $selectURL->bind_param("i", $id);
                     $selectURL->execute();
-                    $selectURLResults = $selectURL->get_result();
+                    $selectURLResults = $selectURL->get_result(); //gets video url
                     if ($selectURLResults->num_rows == 1) {
                         $row = $selectURLResults->fetch_assoc();
                         $path = $row['profile_video'];
                         if ($path == "https://vventuregeneral.s3.us-east-2.amazonaws.com/empty_video.mp4"){
+                            //put temp file in server
                             @file_put_contents($name, $video);
                             $file = "/var/www/html/investor/profile/update/video/" . $name;
                             @chmod($file, 0777);
                             $fileKey = $id . "/ProfileVideo." . $extension;
 
-                            // Set Amazon S3 Credentials
+                            // Set Amazon S3 Credentials and creates instance
                             try {
                                 $s3 = new Aws\S3\S3Client([
                                     'version' => 'latest',
@@ -71,14 +75,17 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "11b1bb7929b3348c1dc0ee17dc20b816
                                 die();
                             }
 
+                            //deletes temp file from server
                             @unlink($file);
                             clearstatcache();
 
                             if (!empty($url)) {
+                                //update db
                                 $updateStmt = $conn->prepare("UPDATE profile_investor SET `profile_video`=? WHERE id_investor=?");
                                 $updateStmt->bind_param("si", $url, $id);
                                 $updateStmt->execute();
 
+                                //sends db
                                 $myObj->res = "success";
                                 $JSON = json_encode($myObj);
                                 echo $JSON;

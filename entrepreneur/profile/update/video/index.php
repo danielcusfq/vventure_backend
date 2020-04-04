@@ -7,6 +7,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "2d75b3c9f1a0986361022cc789546001
         if (isset($_POST['video']) && !empty($_POST['video']) && isset($_POST['ext']) && !empty($_POST['ext'])) {
             require("../../../../connection.php");
             require("../../../../aws/aws-autoloader.php");
+            //gets data
             $bucketName = 'vventureent';
             $IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
             $IAM_SECRET = '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';
@@ -25,21 +26,25 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "2d75b3c9f1a0986361022cc789546001
                 $JSON = json_encode($myObj);
                 echo $JSON;
             } else {
+                //validates user
                 if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+                    //prepares query
                     $selectURL = $conn->prepare("SELECT `profile_video` FROM profile_entrepreneur WHERE id_entrepreneur=?");
                     $selectURL->bind_param("i", $id);
                     $selectURL->execute();
-                    $selectURLResults = $selectURL->get_result();
+                    $selectURLResults = $selectURL->get_result(); // get video url
                     if ($selectURLResults->num_rows == 1) {
                         $row = $selectURLResults->fetch_assoc();
                         $path = $row['profile_video'];
                         if ($path == "https://vventuregeneral.s3.us-east-2.amazonaws.com/empty_video.mp4"){
+                            //put temp video on server
                             @file_put_contents($name, $video);
                             $file = "/var/www/html/entrepreneur/profile/update/video/" . $name;
                             @chmod($file, 0777);
+                            //generates a key for the video
                             $fileKey = $id . "/ProfileVideo." . $extension;
 
-                            // Set Amazon S3 Credentials
+                            // Set Amazon S3 Credentials and s3 instance
                             try {
                                 $s3 = new Aws\S3\S3Client([
                                     'version' => 'latest',
@@ -70,18 +75,22 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "2d75b3c9f1a0986361022cc789546001
                                 die();
                             }
 
+                            //deletes temp video from server
                             @unlink($file);
                             clearstatcache();
 
                             if (!empty($url)) {
+                                //updates db
                                 $updateStmt = $conn->prepare("UPDATE profile_entrepreneur SET `profile_video`=? WHERE id_entrepreneur=?");
                                 $updateStmt->bind_param("si", $url, $id);
                                 $updateStmt->execute();
 
+                                //sends response
                                 $myObj->res = "success";
                                 $JSON = json_encode($myObj);
                                 echo $JSON;
                             } else {
+                                //set empty video
                                 $url = "https://vventuregeneral.s3.us-east-2.amazonaws.com/empty_video.mp4";
                                 $updateStmt = $conn->prepare("UPDATE profile_entrepreneur SET `profile_video`=? WHERE id_entrepreneur=?");
                                 $updateStmt->bind_param("si", $url, $id);

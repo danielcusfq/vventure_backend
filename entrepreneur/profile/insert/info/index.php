@@ -6,6 +6,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "6523cde886413d7237021657b6fee698
     if (isset($_POST['id']) && isset($_POST['token']) && isset($_POST['type']) && !empty($_POST['id']) && !empty($_POST['token']) && $_POST['type'] == 1) {
         if (isset($_POST['detail']) && !empty($_POST['detail']) && isset($_POST['title']) && !empty($_POST['title'])) {
             require ("../../../../connection.php");
+            //gets data
             $id = $_POST['id'];
             $type = $_POST['type'];
             $token = $_POST['token'];
@@ -13,11 +14,14 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "6523cde886413d7237021657b6fee698
             $title = $_POST['title'];
             $pos = 99;
 
+            //validate user
             if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+                //prepare query
                 $insertStmt = $conn->prepare("INSERT INTO `info_entrepreneur` (`id_entrepreneur`, `title`, `detail`, `position`) VALUES (?,?,?,?)");
                 $insertStmt->bind_param("issi", $id, $title, $detail, $pos);
                 $insertStmt->execute();
 
+                //sends response
                 $myObj->res = "success";
                 $JSON = json_encode($myObj);
                 echo $JSON;

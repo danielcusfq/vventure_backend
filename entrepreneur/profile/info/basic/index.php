@@ -4,9 +4,11 @@ $myObj = (object)array();
 
 if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && $_GET['auth'] == "ee046aa3e8cba86d08f5c902c2dba507c7ec6c63da3cbc0262ff2e5d3f969854"){
     require_once("../../../../connection.php");
+    //gets data
     $id = $_GET{'id'};
     $token = $_GET{'token'};
 
+    //fetch user information
     $getProfile = $conn->prepare("SELECT user_entrepreneur.id, user_entrepreneur.organization, user_entrepreneur.name, user_entrepreneur.last_name, 
                     profile_entrepreneur.profile_picture, profile_entrepreneur.profile_video, profile_entrepreneur.stage, 
                     profile_entrepreneur.stake, profile_entrepreneur.stake_info, profile_entrepreneur.solution, profile_entrepreneur.problem FROM user_entrepreneur JOIN profile_entrepreneur WHERE 
@@ -31,6 +33,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
         $myObj->solution = $row['solution'];
     }
 
+    //fetch user information
     $userHighlights = array();
     $getHighlight = $conn->prepare("SELECT highlights_entrepreneur.id_highlight, highlights_entrepreneur.description FROM  
                 highlights_entrepreneur JOIN user_entrepreneur WHERE highlights_entrepreneur.id_entrepreneur=user_entrepreneur.id AND user_entrepreneur.id=?");
@@ -50,6 +53,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
 
     $myObj->highlights = $userHighlights;
 
+    //fetch user information
     $userInfo = array();
     $getInfo = $conn->prepare("SELECT info_entrepreneur.id_info, info_entrepreneur.title, info_entrepreneur.detail, info_entrepreneur.position 
                 FROM info_entrepreneur JOIN user_entrepreneur WHERE info_entrepreneur.id_entrepreneur=user_entrepreneur.id AND user_entrepreneur.id=?
@@ -72,6 +76,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
 
     $myObj->info = $userInfo;
 
+    //fetch user information
     $userImages = array();
     $getImages = $conn->prepare("SELECT images_entrepreneur.id_image, images_entrepreneur.image_path FROM images_entrepreneur JOIN 
                     user_entrepreneur WHERE images_entrepreneur.id_entrepreneur=user_entrepreneur.id AND user_entrepreneur.id=?");
@@ -91,6 +96,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
 
     $myObj->images = $userImages;
 
+    //fetch user information
     $userTimeline = array();
     $getTimeline = $conn->prepare("SELECT timeline_entrepreneur.id_timeline, timeline_entrepreneur.description, timeline_entrepreneur.position 
                     FROM timeline_entrepreneur JOIN user_entrepreneur WHERE timeline_entrepreneur.id_entrepreneur=user_entrepreneur.id AND user_entrepreneur.id=?");
@@ -109,6 +115,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
         }
     }
 
+    //sends response
     $myObj->timeline = $userTimeline;
     $JSON = json_encode($myObj);
     echo $JSON;

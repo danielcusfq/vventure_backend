@@ -7,6 +7,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "58c9f66f088872805a34ebbe24f971f8
         if (isset($_POST['image']) && !empty($_POST['image']) && isset($_POST['ext']) && !empty($_POST['ext'])) {
             require("../../../../connection.php");
             require("../../../../aws/aws-autoloader.php");
+            //gets data
             $bucketName = 'vventureent';
             $IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
             $IAM_SECRET = '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';
@@ -25,17 +26,20 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "58c9f66f088872805a34ebbe24f971f8
                 $JSON = json_encode($myObj);
                 echo $JSON;
             } else {
+                //validates user
                 if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+                    //prepare query
                     $selectURL = $conn->prepare("SELECT `profile_picture` FROM profile_entrepreneur WHERE id_entrepreneur=?");
                     $selectURL->bind_param("i", $id);
                     $selectURL->execute();
-                    $selectURLResults = $selectURL->get_result();
+                    $selectURLResults = $selectURL->get_result(); //get image url
                     if ($selectURLResults->num_rows == 1) {
                         $row = $selectURLResults->fetch_assoc();
                         $path = $row['profile_picture'];
 
                         $fileKey = @str_replace("https://vventureent.s3.us-east-2.amazonaws.com/","",$path);
                         try {
+                            //creates s3 instance
                             $s3 = new Aws\S3\S3Client([
                                 'version' => 'latest',
                                 'region'  => 'us-east-2',
@@ -48,6 +52,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "58c9f66f088872805a34ebbe24f971f8
                             die();
                         }
 
+                        //deletes image
                         try {
                             $s3->deleteObject(
                                 array(
@@ -59,9 +64,11 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "58c9f66f088872805a34ebbe24f971f8
 
                         }
 
+                        //insert temp image in server
                         @file_put_contents($name, $image);
                         $file = "/var/www/html/entrepreneur/profile/update/profile_image/" . $name;
                         @chmod($file, 0777);
+                        //generates key
                         $fileKey = $id . "/ProfileImage." . $extension;
 
                         //Image Upload to S3 bucket
@@ -81,18 +88,22 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "58c9f66f088872805a34ebbe24f971f8
                             die();
                         }
 
+                        //deletes temp image
                         @unlink($file);
                         clearstatcache();
 
                         if (!empty($url)) {
+                            //updates db
                             $updateStmt = $conn->prepare("UPDATE profile_entrepreneur SET `profile_picture`=? WHERE id_entrepreneur=?");
                             $updateStmt->bind_param("si", $url, $id);
                             $updateStmt->execute();
 
+                            //sends response
                             $myObj->res = "success";
                             $JSON = json_encode($myObj);
                             echo $JSON;
                         } else {
+                            //sets empty image if no image
                             $url = "https://vventuregeneral.s3.us-east-2.amazonaws.com/empty_profile.png";
                             $updateStmt = $conn->prepare("UPDATE profile_entrepreneur SET `profile_video`=? WHERE id_entrepreneur=?");
                             $updateStmt->bind_param("si", $url, $id);

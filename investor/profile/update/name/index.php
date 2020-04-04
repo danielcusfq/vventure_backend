@@ -7,17 +7,21 @@ if (isset($_POST{'id'}) && isset($_POST['token']) && !empty($_POST{'id'}) && !em
         ($_POST['token']) && $_POST['type'] == 2) {
         if (isset($_POST['name']) && !empty($_POST['name']) && isset($_POST['last']) && !empty($_POST['last'])) {
             require("../../../../connection.php");
+            //gets data
             $id = $_POST['id'];
             $type = $_POST['type'];
             $token = $_POST['token'];
             $name = $_POST['name'];
             $last = $_POST['last'];
 
+            //verifies user
             if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+                //prepares query
                 $updateStatement = $conn->prepare("UPDATE `user_investor` SET `name`=?, `last_name`=? WHERE id=?");
                 $updateStatement->bind_param("ssi", $name, $last, $id);
                 $updateStatement->execute();
 
+                //send response
                 $myObj->res = "success";
                 $JSON = json_encode($myObj);
                 echo $JSON;

@@ -1,5 +1,6 @@
 <?php
 class Validation{
+    //verifies if user exists on database
     static function VerifyUser($id, $type, $token, $conn){
         $activation = 1;
 
@@ -22,6 +23,7 @@ class Validation{
         }
     }
 
+    //verifies if user is in favorites
     static function IsInFavorites($id, $counterpart, $type, $conn){
         if ($type == 1){
             $validationStmt = $conn->prepare("SELECT `id_entrepreneur` FROM `favorites_entrepreneur` WHERE `id_entrepreneur`=? AND `id_investor`=? ");

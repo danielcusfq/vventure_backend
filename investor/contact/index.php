@@ -7,12 +7,13 @@ $myObj = (object)array();
 if (isset($_GET['auth']) && isset($_GET['id']) && isset($_GET['token']) && isset($_GET['entrepreneur']) && !empty($_GET['id'])
     && !empty($_GET['token']) && !empty($_GET['entrepreneur']) && $_GET['auth'] == "357c4b87c630bd41efc01097ff535209d1eba8bc536964902cf4e1653596ebbf"){
     require_once ('../../connection.php');
+    //gets data
     $id = $_GET['id'];
     $token = $_GET['token'];
     $entrepreneur = $_GET['entrepreneur'];
     $type = 2;
 
-
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
         $getEmail = $conn->prepare("SELECT user_investor.email FROM user_investor WHERE user_investor.id=? AND user_investor.token=?");
         $getEmail->bind_param("is", $id, $token);
@@ -20,12 +21,13 @@ if (isset($_GET['auth']) && isset($_GET['id']) && isset($_GET['token']) && isset
 
         $getEmailResult = $getEmail->get_result();
 
-
+        //validates email exists
         if ($getEmailResult->num_rows == 1){
             $emailRow = $getEmailResult->fetch_assoc();
             $investorEmail = $emailRow['email'];
 
             if (!empty($investorEmail)){
+                //prepares query
                 $getUserInfo = $conn->prepare("SELECT user_entrepreneur.name, user_entrepreneur.last_name, user_entrepreneur.organization, 
                         user_entrepreneur.email, profile_entrepreneur.profile_picture FROM user_entrepreneur JOIN profile_entrepreneur WHERE 
                         user_entrepreneur.id=profile_entrepreneur.id_entrepreneur AND user_entrepreneur.id=?");
@@ -33,6 +35,7 @@ if (isset($_GET['auth']) && isset($_GET['id']) && isset($_GET['token']) && isset
                 $getUserInfo->execute();
                 $getUserInfoResult = $getUserInfo->get_result();
 
+                //fetch user information
                 if ($getUserInfoResult->num_rows > 0){
                     $row = $getUserInfoResult->fetch_assoc();
                     $pic = $row['profile_picture'];
@@ -40,7 +43,7 @@ if (isset($_GET['auth']) && isset($_GET['id']) && isset($_GET['token']) && isset
                     $name = $row['name'] . " " . $row['last_name'];
                     $email = $row['email'];
 
-
+                    //creates email object
                     $mj = new \Mailjet\Client('fe5ff2652b29d928de4ea0852d57aa6f','55951c0c7976fedadeec2c7c6bc3140c',true,['version' => 'v3.1']);
                     $body = [
                         'Messages' => [
@@ -75,7 +78,7 @@ if (isset($_GET['auth']) && isset($_GET['id']) && isset($_GET['token']) && isset
                                                                 </tr>
                                                                 <tr align='center'>
                                                                     <td style=\"font-family: 'Calibri Light'; font-size: 18px; font-weight: lighter; padding-top: 25px\" align='center'>
-                                                                        Run by
+                                                                        Representada por
                                                                     </td>
                                                                 </tr>
                                                                 <tr align='center'>
@@ -85,7 +88,7 @@ if (isset($_GET['auth']) && isset($_GET['id']) && isset($_GET['token']) && isset
                                                                 </tr>
                                                                 <tr align='center'>
                                                                     <td style=\"font-family: 'Calibri Light'; font-size: 18px; font-weight: lighter; padding-top: 25px\" align='center'>
-                                                                        Contact Email
+                                                                        Email
                                                                     </td>
                                                                 </tr>
                                                                 <tr align='center'>
@@ -109,8 +112,10 @@ if (isset($_GET['auth']) && isset($_GET['id']) && isset($_GET['token']) && isset
                             ]
                         ]
                     ];
+                    //sends email
                     $mj->post(Resources::$Email, ['body' => $body]);
 
+                    //sends response
                     $myObj->res = "success";
                     $JSON = json_encode($myObj);
                     echo $JSON;

@@ -6,16 +6,20 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "f525ddc20d143230a7e3a2b4d6871ebf
     if (isset($_POST['id']) && isset($_POST['token']) && isset($_POST['type']) && !empty($_POST['id']) && !empty($_POST['token']) && $_POST['type'] == 1) {
         if (isset($_POST['detail']) && !empty($_POST['detail'])) {
             require ("../../../../connection.php");
+            //gets all data
             $id = $_POST['id'];
             $type = $_POST['type'];
             $token = $_POST['token'];
             $detail = $_POST['detail'];
 
+            //validates user
             if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+                //prepare query
                 $insertStmt = $conn->prepare("INSERT INTO `highlights_entrepreneur` (`id_entrepreneur`, `description`) VALUES (?,?)");
                 $insertStmt->bind_param("is", $id, $detail);
                 $insertStmt->execute();
 
+                //sends response
                 $myObj->res = "success";
                 $JSON = json_encode($myObj);
                 echo $JSON;

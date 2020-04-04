@@ -9,7 +9,7 @@ $myObj = (object)array();
 // verifies it comes from authorized device
 if (isset($_POST["auth"]) && $_POST["auth"] == "a5d2f6ffbaeb6e229e05e0b2e6a9136473778c0160d3a4d07f4c380067b3c2cd"){
     require ("../../connection.php");
-
+    //data init
     $token = $_POST["token"];
     $type = mysqli_real_escape_string($conn,$_POST["type"]);
     $image = "";

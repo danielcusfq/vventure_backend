@@ -6,11 +6,14 @@ $myObj = (object)array();
 
 if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && $_GET['auth'] == "93d558beec793039706264467f6e15463c34c552f968efd6ce09db62e2d489cb") {
     require_once("../../../../connection.php");
+    //gets data
     $id = $_GET{'id'};
     $token = $_GET{'token'};
     $type = 1;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+        //prepare query
         $getProfile = $conn->prepare("SELECT user_entrepreneur.id, user_entrepreneur.organization, user_entrepreneur.name, user_entrepreneur.last_name, 
                     profile_entrepreneur.profile_picture, profile_entrepreneur.profile_video, profile_entrepreneur.stage, 
                     profile_entrepreneur.stake, profile_entrepreneur.stake_info, profile_entrepreneur.solution, profile_entrepreneur.problem FROM user_entrepreneur JOIN profile_entrepreneur WHERE 
@@ -19,6 +22,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
         $getProfile->execute();
         $getProfileResults = $getProfile->get_result();
 
+        //fetch user data
         if ($getProfileResults->num_rows == 1) {
             $row = $getProfileResults->fetch_assoc();
             $organization = $row['organization'];
@@ -33,7 +37,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
         }
 
         $highlights = "";
-
+        //fetch user data
         $getHighlight = $conn->prepare("SELECT highlights_entrepreneur.id_highlight, highlights_entrepreneur.description FROM  
                 highlights_entrepreneur JOIN user_entrepreneur WHERE highlights_entrepreneur.id_entrepreneur=user_entrepreneur.id AND user_entrepreneur.id=?");
         $getHighlight->bind_param("i", $id);
@@ -44,7 +48,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
                 $highlights .= "<div class='highlights' align='center'> ".$row['description']." </div> <br>";
             }
         }
-
+        //fetch user data
         $info = "";
         $getInfo = $conn->prepare("SELECT info_entrepreneur.id_info, info_entrepreneur.title, info_entrepreneur.detail, info_entrepreneur.position 
                 FROM info_entrepreneur JOIN user_entrepreneur WHERE info_entrepreneur.id_entrepreneur=user_entrepreneur.id AND user_entrepreneur.id=?
@@ -66,7 +70,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
             }
         }
 
-
+        //fetch user data
         $timeline = "";
         $getTimeline = $conn->prepare("SELECT timeline_entrepreneur.id_timeline, timeline_entrepreneur.description, timeline_entrepreneur.position 
                     FROM timeline_entrepreneur JOIN user_entrepreneur WHERE timeline_entrepreneur.id_entrepreneur=user_entrepreneur.id AND user_entrepreneur.id=?");
@@ -79,59 +83,61 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
             }
         }
 
+        //creates html to get converted to PDF
         $html =     "<div style='width: 800px' align='center'>
-                <h1 align='center'>My Profile</h1>
+                <h1 align='center'>Mi Perfil</h1>
                 <div style='width: 100%; padding-top: 25px' align='center'>
                     <img src='$image' width='120' height='120'>
                 </div>
                 <div align='center'>
                     <div align='center'>
-                        <div align='center' style='font-weight: bold'>Organization</div>
+                        <div align='center' style='font-weight: bold'>Organización</div>
                         $organization
                         <br>
                         <br>
-                        <div align='center' style='font-weight: bold'>Run By</div>
+                        <div align='center' style='font-weight: bold'>Representado Por</div>
                         $name $last
                         <br>
                         <br>
-                        <div align='center' style='font-weight: bold'>Stage</div>
+                        <div align='center' style='font-weight: bold'>Etapa</div>
                         $stage
                         <br>
                         <br>
-                        You are giving $stake
+                        Estas Dando el $stake %
                         <br>
-                        In exchange of $stakeInfo
+                        De tu Compañía a cambio de $stakeInfo
                         <br>
                         <br>
-                        <div align='center' style='font-weight: bold'>You are solving the next problem</div>
+                        <div align='center' style='font-weight: bold'>Estás Resolviendo el Siguiente Problema</div>
                         $problem
                         <br>
                         <br>
-                        <div align='center' style='font-weight: bold'>This is how you are solving the problem</div>
+                        <div align='center' style='font-weight: bold'>Así es como Estás Resolviendo el Problema</div>
                         $solution
                     </div>
                 </div>
                 <div class='highlights' style='padding-top: 25px; width: 100%' align='center'>
                     <div align='center' style='font-weight: bold'>
-                        Highlights
+                        Aspectos Destacados
                     </div>
                     $highlights
                 </div>
                 <div class='info' style='padding-top: 25px; width: 100%' align='center'>
                     <div align='center' style='font-weight: bold'>
-                        Info
+                        Información
                     </div>
                     $info
                 </div>
                 <div class='timeline' style='padding-top: 25px; width: 100%' align='center'>
                     <div align='center' style='font-weight: bold'>
-                        Timeline
+                        Línea de Tiempo
                     </div>
                     $timeline
                 </div>
             </div>
         ";
 
+        //converts to PDF and send PDF to download
         $mpdf = new \Mpdf\Mpdf(['tempDir' => __DIR__ . '/var/www/html/temp', 'mode' => 'utf-8']);
         $mpdf->WriteHTML($html);
         $mpdf->Output('profile.pdf',"D");

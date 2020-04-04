@@ -5,16 +5,20 @@ $myObj = (object)array();
 if (isset($_POST{'id'}) && isset($_POST['token']) && isset($_POST['type']) && !empty($_POST{'id'}) && !empty(isset($_POST['token'])) && $_POST['auth'] == 'f3952cde77f55eff87419f14a2f1680d8553b75d0850f0d64f138613d650b131' && $_POST['type'] == 1) {
     if (isset($_POST['id_timeline']) && !empty($_POST['id_timeline'])) {
         require("../../../../connection.php");
+        //get data
         $id = $_POST['id'];
         $type = $_POST['type'];
         $token = $_POST['token'];
         $id_timeline = $_POST['id_timeline'];
 
+        //validates user
         if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+            //prepares query
             $updateStatement = $conn->prepare("DELETE FROM `timeline_entrepreneur` WHERE id_entrepreneur=? AND id_timeline=?");
             $updateStatement->bind_param("ii",  $id, $id_timeline);
             $updateStatement->execute();
 
+            //sends response
             $myObj->res = "success";
             $JSON = json_encode($myObj);
             echo $JSON;

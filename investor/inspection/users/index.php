@@ -5,13 +5,16 @@ $myObj = (object)array();
 
 if (isset($_GET{'id'}) && isset($_GET['token'])  && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && $_GET['auth'] == '355155b15b8f4acab45ac8cb623522b5c60d82a300429e3723c84853f6633ded') {
     require("../../../connection.php");
+    //gets data
     $id = $_GET['id'];
     $type = 2;
     $token = $_GET['token'];
     $activation = 1;
     $inspected = 0;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+        //prepares query
         $getUsers =$conn->prepare("SELECT inspection.id_inspection, user_entrepreneur.id, profile_entrepreneur.stage, user_entrepreneur.organization, 
                     profile_entrepreneur.profile_picture FROM profile_entrepreneur JOIN user_entrepreneur JOIN inspection WHERE profile_entrepreneur.id_entrepreneur=user_entrepreneur.id 
                     AND user_entrepreneur.activation=? AND inspection.inspected=? AND inspection.id_entrepreneur=user_entrepreneur.id AND inspection.id_investor=?");
@@ -23,6 +26,7 @@ if (isset($_GET{'id'}) && isset($_GET['token'])  && !empty($_GET{'id'}) && !empt
         $lastUser = null;
         $noUsers = true;
 
+        //fetch data
         if ($getUsersResults->num_rows > 0) {
             $noUsers = false;
             while($row = $getUsersResults->fetch_assoc()){
@@ -37,6 +41,7 @@ if (isset($_GET{'id'}) && isset($_GET['token'])  && !empty($_GET{'id'}) && !empt
                 array_push($users, $userInfo);
             }
 
+            //sends response
             $myObj->res = "success";
             $myObj->users = $users;
             $myObj->last = $lastUser;

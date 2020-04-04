@@ -7,6 +7,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "ac4e7d80123eb6f32ce658fd96770353
         ($_POST['token']) && $_POST['type'] == 2) {
         if (isset($_POST['detail']) && !empty($_POST['detail']) && isset($_POST['title']) && !empty($_POST['title'])) {
             require ("../../../../connection.php");
+            //gets data
             $id = $_POST['id'];
             $type = $_POST['type'];
             $token = $_POST['token'];
@@ -14,11 +15,13 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "ac4e7d80123eb6f32ce658fd96770353
             $title = $_POST['title'];
             $pos = 99;
 
+            //validates user
             if (Validation::VerifyUser($id, $type, $token, $conn) == true){
                 $insertStmt = $conn->prepare("INSERT INTO `info_investor` (`id_investor`, `title`, `detail`, `position`) VALUES (?,?,?,?)");
                 $insertStmt->bind_param("issi", $id, $title, $detail, $pos);
                 $insertStmt->execute();
 
+                //sends response
                 $myObj->res = "success";
                 $JSON = json_encode($myObj);
                 echo $JSON;

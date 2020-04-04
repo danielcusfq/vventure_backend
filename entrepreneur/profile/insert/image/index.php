@@ -7,6 +7,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "ed317b354577d279ac35f26dffac9161
         if (isset($_POST['image']) && !empty($_POST['image']) && isset($_POST['ext']) && !empty($_POST['ext'])) {
             require ("../../../../connection.php");
             require ("../../../../aws/aws-autoloader.php");
+            //gets dta
             $bucketName = 'vventureent';
             $IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
             $IAM_SECRET = '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';
@@ -25,12 +26,13 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "ed317b354577d279ac35f26dffac9161
                 $JSON = json_encode($myObj);
                 echo $JSON;
             } else {
+                //validates user
                 if (Validation::VerifyUser($id, $type, $token, $conn) == true){
                     file_put_contents($name, $image);
                     chmod("/var/www/html/entrepreneur/profile/insert/image/".$name, 0777);
                     $file = "/var/www/html/entrepreneur/profile/insert/image/".$name;
 
-                    // Set Amazon S3 Credentials
+                    // Set Amazon S3 Credentials and creates s3 instance
                     try {
                         $s3 = new Aws\S3\S3Client([
                             'version' => 'latest',
@@ -44,6 +46,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "ed317b354577d279ac35f26dffac9161
                         die();
                     }
 
+                    //generates key
                     $fileKey = $id."/WorkImage".$salt.".".$extension;
 
                     //Image Upload to S3 bucket
@@ -63,10 +66,12 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "ed317b354577d279ac35f26dffac9161
                         die();
                     }
 
+                    //deletes temp image
                     @unlink("/var/www/html/entrepreneur/profile/insert/image/".$name);
                     clearstatcache();
 
                     if (!empty($url)){
+                        //updates db
                         $insertStmt = $conn->prepare("INSERT INTO `images_entrepreneur` (`id_entrepreneur`, `image_path`) VALUES (?,?)");
                         $insertStmt->bind_param("is", $id, $url);
                         $insertStmt->execute();

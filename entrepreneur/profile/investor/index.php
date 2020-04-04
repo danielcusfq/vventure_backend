@@ -5,12 +5,15 @@ $myObj = (object)array();
 if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['investor']) && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && !empty($_GET['investor']) &&
     $_GET['auth'] == "7651a608b416bbd74d24f75f7ece3fe50878cb08eb524f13086a01320fa2dabf"){
     require_once("../../../connection.php");
+    //gets data
     $id = $_GET{'id'};
     $token = $_GET{'token'};
     $investor = $_GET['investor'];
     $type = 1;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+        //prepare query
         $getProfile = $conn->prepare("SELECT user_investor.id, user_investor.organization, user_investor.name, user_investor.last_name, 
                     profile_investor.profile_picture, profile_investor.profile_video,
                     profile_investor.interests, profile_investor.background FROM user_investor JOIN profile_investor WHERE 
@@ -19,6 +22,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['investor']) && !
         $getProfile->execute();
         $getProfileResults = $getProfile->get_result();
 
+        //fetch data
         if ($getProfileResults->num_rows == 1) {
             $row = $getProfileResults->fetch_assoc();
             $myObj->res = "success";
@@ -122,6 +126,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && isset($_GET['investor']) && !
             $myObj->infavorites = false;
         }
 
+        //sends response
         $JSON = json_encode($myObj);
         echo $JSON;
     } else {

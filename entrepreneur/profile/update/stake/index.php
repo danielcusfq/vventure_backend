@@ -6,17 +6,21 @@ if (isset($_POST{'id'}) && isset($_POST['token']) && !empty($_POST{'id'}) && !em
     if (isset($_POST['id']) && isset($_POST['token']) && isset($_POST['type']) && !empty($_POST['id']) && !empty($_POST['token']) && $_POST['type'] == 1) {
         if (isset($_POST['stake']) && !empty($_POST['stake']) && isset($_POST['exchange']) && !empty($_POST['exchange'])) {
             require("../../../../connection.php");
+            //gets data
             $id = $_POST['id'];
             $type = $_POST['type'];
             $token = $_POST['token'];
             $stake = $_POST['stake'];
             $exchange = $_POST['exchange'];
 
+            //validates user
             if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+                //prepares query
                 $updateStatement = $conn->prepare("UPDATE `profile_entrepreneur` SET `stake`=?, `stake_info`=? WHERE id_entrepreneur=?");
                 $updateStatement->bind_param("ssi", $stake, $exchange, $id);
                 $updateStatement->execute();
 
+                //sends response
                 $myObj->res = "success";
                 $JSON = json_encode($myObj);
                 echo $JSON;

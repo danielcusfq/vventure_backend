@@ -7,6 +7,7 @@ if (isset($_GET["auth"]) && $_GET["auth"] = "80d3d6348cf687df8c7fbd7dc901822f594
     require_once ("../../connection.php");
 
     $activation = 1;
+    //prepares select query
     $getUsers =$conn->prepare("SELECT user_investor.id, user_investor.name, user_investor.last_name, user_investor.organization, 
        profile_investor.profile_picture FROM profile_investor JOIN user_investor WHERE profile_investor.id_investor=user_investor.id AND user_investor.activation=?");
     $getUsers->bind_param("i", $activation);
@@ -17,6 +18,7 @@ if (isset($_GET["auth"]) && $_GET["auth"] = "80d3d6348cf687df8c7fbd7dc901822f594
     $lastUser = null;
     $noUsers = true;
 
+    //fetch all users
     if ($getUsersResults->num_rows > 0) {
         $noUsers = false;
         while($row = $getUsersResults->fetch_assoc()){
@@ -32,6 +34,7 @@ if (isset($_GET["auth"]) && $_GET["auth"] = "80d3d6348cf687df8c7fbd7dc901822f594
             array_push($users, $userInfo);
         }
     } else {
+        //sends response
         $myObj->res = "error no auth";
         $JSON = json_encode($myObj);
         echo $JSON;

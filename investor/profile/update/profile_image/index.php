@@ -8,6 +8,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "7892cabe8bba72b69adbfe32c139e1b2
         if (isset($_POST['image']) && !empty($_POST['image']) && isset($_POST['ext']) && !empty($_POST['ext'])) {
             require("../../../../connection.php");
             require("../../../../aws/aws-autoloader.php");
+            //gets data
             $bucketName = 'vventureinv';
             $IAM_KEY = 'AKIAJ6VDWA3J2OM5L7WA';
             $IAM_SECRET = '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';
@@ -26,16 +27,19 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "7892cabe8bba72b69adbfe32c139e1b2
                 $JSON = json_encode($myObj);
                 echo $JSON;
             } else {
+                //validates user
                 if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+                    //prepares query
                     $selectURL = $conn->prepare("SELECT `profile_picture` FROM profile_investor WHERE id_investor=?");
                     $selectURL->bind_param("i", $id);
                     $selectURL->execute();
-                    $selectURLResults = $selectURL->get_result();
+                    $selectURLResults = $selectURL->get_result(); //gets image url
                     if ($selectURLResults->num_rows == 1) {
                         $row = $selectURLResults->fetch_assoc();
                         $path = $row['profile_picture'];
 
                         $fileKey = @str_replace("https://vventureinv.s3.us-east-2.amazonaws.com/","",$path);
+                        //creates s3 instance
                         try {
                             $s3 = new Aws\S3\S3Client([
                                 'version' => 'latest',
@@ -49,6 +53,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "7892cabe8bba72b69adbfe32c139e1b2
                             die();
                         }
 
+                        //deletes image
                         try {
                             $s3->deleteObject(
                                 array(
@@ -60,6 +65,7 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "7892cabe8bba72b69adbfe32c139e1b2
 
                         }
 
+                        //put temp file in server
                         @file_put_contents($name, $image);
                         $file = "/var/www/html/investor/profile/update/profile_image/" . $name;
                         @chmod($file, 0777);
@@ -82,14 +88,17 @@ if (isset($_POST["auth"]) && $_POST["auth"] == "7892cabe8bba72b69adbfe32c139e1b2
                             die();
                         }
 
+                        //deletes temp file from server
                         @unlink($file);
                         clearstatcache();
 
                         if (!empty($url)) {
+                            //updates db
                             $updateStmt = $conn->prepare("UPDATE profile_investor SET `profile_picture`=? WHERE id_investor=?");
                             $updateStmt->bind_param("si", $url, $id);
                             $updateStmt->execute();
 
+                            //sends response
                             $myObj->res = "success";
                             $JSON = json_encode($myObj);
                             echo $JSON;

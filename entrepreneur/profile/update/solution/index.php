@@ -6,16 +6,20 @@ if (isset($_POST{'id'}) && isset($_POST['token']) && !empty($_POST{'id'}) && !em
     if (isset($_POST['id']) && isset($_POST['token']) && isset($_POST['type']) && !empty($_POST['id']) && !empty($_POST['token']) && $_POST['type'] == 1) {
         if (isset($_POST['solution']) && !empty($_POST['solution'])) {
             require("../../../../connection.php");
+            //get data
             $id = $_POST['id'];
             $type = $_POST['type'];
             $token = $_POST['token'];
             $solution = $_POST['solution'];
 
+            //validates user
             if (Validation::VerifyUser($id, $type, $token, $conn) == true){
+                //prepare query
                 $updateStatement = $conn->prepare("UPDATE `profile_entrepreneur` SET `solution`=? WHERE id_entrepreneur=?");
                 $updateStatement->bind_param("si", $solution, $id);
                 $updateStatement->execute();
 
+                //sends response
                 $myObj->res = "success";
                 $JSON = json_encode($myObj);
                 echo $JSON;

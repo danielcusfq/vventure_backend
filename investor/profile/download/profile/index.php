@@ -6,11 +6,14 @@ $myObj = (object)array();
 
 if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty(isset($_GET['token'])) && $_GET['auth'] == "b4168ab5b11fdb0808e51ce69279566e56a63800a8430aa4555177a17fc8178b") {
     require_once("../../../../connection.php");
+    //gets data
     $id = $_GET{'id'};
     $token = $_GET{'token'};
     $type = 2;
 
+    //validates user
     if (Validation::VerifyUser($id, $type, $token, $conn) == true) {
+        //prepare query
         $getProfile = $conn->prepare("SELECT user_investor.id, user_investor.organization, user_investor.name, user_investor.last_name, 
                     profile_investor.profile_picture, profile_investor.profile_video,
                     profile_investor.interests, profile_investor.background FROM user_investor JOIN profile_investor WHERE 
@@ -18,6 +21,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
         $getProfile->bind_param("is", $id, $token);
         $getProfile->execute();
         $getProfileResults = $getProfile->get_result();
+        //fetch information
         if ($getProfileResults->num_rows == 1) {
             $row = $getProfileResults->fetch_assoc();
             $organization = $row['organization'];
@@ -40,7 +44,7 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
             }
         }
 
-        $$info = "";
+        $info = "";
         $getInfo = $conn->prepare("SELECT info_investor.id_info, info_investor.title, info_investor.detail, info_investor.position 
                 FROM info_investor JOIN user_investor WHERE info_investor.id_investor=user_investor.id AND user_investor.id=?
                 ORDER BY info_investor.position");
@@ -74,49 +78,50 @@ if (isset($_GET{'id'}) && isset($_GET['token']) && !empty($_GET{'id'}) && !empty
         }
 
         $html =     "<div style='width: 800px' align='center'>
-                <h1 align='center'>My Profile</h1>
+                <h1 align='center'>Mi Perfil</h1>
                 <div style='width: 100%; padding-top: 25px' align='center'>
                     <img src='$image' width='120' height='120'>
                 </div>
                 <div align='center'>
                     <div align='center'>
-                        <div align='center' style='font-weight: bold'>Organization</div>
+                        <div align='center' style='font-weight: bold'>Organización</div>
                         $organization
                         <br>
                         <br>
-                        <div align='center' style='font-weight: bold'>Run By</div>
+                        <div align='center' style='font-weight: bold'>Representado Por</div>
                         $name $last
                         <br>
                         <br>
-                        <div align='center' style='font-weight: bold'>These Are Your Interests</div>
+                        <div align='center' style='font-weight: bold'>Estos son tus Intereses</div>
                         $interests
                         <br>
                         <br>
-                        <div align='center' style='font-weight: bold'>This is Your Background</div>
+                        <div align='center' style='font-weight: bold'>Estos son tus Antecedentes</div>
                         $background
                     </div>
                 </div>
                 <div class='highlights' style='padding-top: 25px; width: 100%' align='center'>
                     <div align='center' style='font-weight: bold'>
-                        Highlights
+                        Aspectos Destacados
                     </div>
                     $highlights
                 </div>
                 <div class='info' style='padding-top: 25px; width: 100%' align='center'>
                     <div align='center' style='font-weight: bold'>
-                        Info
+                        Información
                     </div>
                     $info
                 </div>
                 <div class='timeline' style='padding-top: 25px; width: 100%' align='center'>
                     <div align='center' style='font-weight: bold'>
-                        Timeline
+                        Línea de Tiempo
                     </div>
                     $timeline
                 </div>
             </div>
         ";
 
+        //creates PDF and sends to downloads
         $mpdf = new \Mpdf\Mpdf(['tempDir' => __DIR__ . '/var/www/html/temp', 'mode' => 'utf-8']);
         $mpdf->WriteHTML($html);
         $mpdf->Output('profile.pdf','D');
