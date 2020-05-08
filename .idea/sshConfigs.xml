@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="ec2-3-15-193-184.us-east-2.compute.amazonaws.com" id="79430e67-ac04-4162-bdab-8bac3bbe2103" keyPath="D:\_Documents\_tesis\Keys\web-server.ppk" nameFormat="DESCRIPTIVE" username="ubuntu" />
+    </configs>
+  </component>
+</project>
